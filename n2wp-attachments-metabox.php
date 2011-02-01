@@ -23,8 +23,11 @@
 add_action( 'admin_init', 'add_attachment' );
 add_action( 'save_post', 'update_attachment' );
 add_action( 'post_edit_form_tag', 'form_multipart_encoding' );
+
 add_action( 'wp_ajax_delete_attachment', 'delete_attachment' );
-add_action( 'manage_posts_custom_column', 'product_custom_columns' );
+//add_action( 'wp_ajax_delete_attachment', 'update_attachment' );
+
+add_filter( 'manage_posts_custom_column', 'product_custom_columns' );
 add_filter( 'manage_edit-product_columns', 'product_edit_columns' );
 
 
@@ -50,18 +53,19 @@ function form_multipart_encoding() {
 function add_attachments(){
 	global $post;
 	$attachments = get_posts( array( 'post_type' => 'attachment', 'post_parent' => $post->ID )); ?>
+	<a href="#" class="addImage button"><?php _e( 'Add Image' ); ?></a>
 	<div id="img_uploads">
 	<?php
 	if( $attachments ) {
 		foreach( $attachments as $attachment ) { ?>
-
-			<h4><a href="#" class="addImage button"><?php _e( 'Add Another Image' ); ?></a></h4>
+		
 			<div id="att-<?php echo $attachment->ID; ?>" class="attchmt">
+				<pre><?php print_r($attachment); ?></pre>
 				<table id="table-<?php echo $attachment->ID; ?>" class="attach-table" width="100%" cellpadding="3" cellspacing="2">
 					<tr>
 						<td><span class="req">*</span><?php _e('Image:'); ?></td>
 						<td colspan="2">
-							<?php if( !$attachment->guid ) { ?>
+							<?php if( !isset( $attachment->guid )) { ?>
 								<input type="file" name="a_image" />
 							<?php } else { ?>
 								<input type="text" name="a_url" size="60" value="<?php echo $attachment->guid; ?>" />
@@ -70,7 +74,7 @@ function add_attachments(){
 					</tr>
 					<tr>
 						<td><label><span class="req">*</span><?php _e('Title:'); ?> </label></td>
-						<td><input type="text" name="a_title" value="<?php echo apply_filters( 'the_title', $attachment->post_title ); ?>" /></td>
+						<td><input type="text" name="a_title[]" value="<?php echo $attachment->post_title; ?>" /></td>
 						<td rowspan="4" valign="top" align="center">
 							<div class="prevImage">
 								<div align="center"><?php the_attachment_link( $attachment->ID, false, array( 32, 32 )); ?></div>
@@ -79,22 +83,23 @@ function add_attachments(){
 					</tr>
 					<tr>
 						<td><label><?php _e('Alt Text:'); ?></label></td>
-						<td><input type="text" name="a_alt" value="<?php echo $attachment->image_alt; ?>" /></td>
+						<td><input type="text" name="a_alt[]" value="<?php echo $attachment->image_alt; ?>" /></td>
 					</tr>
 					<tr>
 						<td><label><?php _e('Content:'); ?></label></td>
-						<td><input type="text" name="a_desc" value="<?php echo $attachment->post_content; ?>" /></td>
+						<td><input type="text" name="a_content[]" value="<?php echo $attachment->post_content; ?>" /></td>
 					</tr>
 					<tr>
 						<td><label><?php _e('Caption:'); ?></label></td>
-						<td><input type="text" id="a_excerpt" name="a_excerpt" value="<?php echo $attachment->post_excerpt; ?>" /></td>
+						<td><input type="text" id="a_excerpt[]" name="a_excerpt" value="<?php echo $attachment->post_excerpt; ?>" /></td>
 					</tr>
 				</table>
 					
 				<a class="saveImage button" href="#"><?php _e('Save Image'); ?></a>
 				<a class="remImage button" href="#"><?php _e('Remove Image'); ?></a>
-			<input type="hidden" id="att_ID" name="att_ID[]" value="<?php echo $attachment->ID; ?>" />
-			<input type="hidden" name="nonce_delete" id="nonce_delete" value="<?php echo wp_create_nonce( 'delete_attachment' ); ?>" />		
+				<a href="#" class="addImage button fr"><?php _e('Attach Another Image'); ?></a>
+			<input type="hidden" id="att_ID" name="att_ID[]" value="<?php echo $attachment->ID;?>" />
+			<input type="hidden" name="nonce_delete" id="nonce_delete" value="<?php echo wp_create_nonce('delete_attachment');?>" />
 			</div>
 		<?php
 			}
@@ -114,7 +119,7 @@ function metabox_scripts() { ?>
 		var imgDiv = jQuery('#img_uploads'),
 			size = jQuery('#img_uploads .attchmt').size() + 1;			
 		jQuery('.addImage').live('click', function() {
-			jQuery('<div id="att-' + size + '" class="attchmt"><p><label><?php _e( 'Title:' );?><br /><input type="text" name="a_title" value="" /></label></p><p><label><?php _e( 'Description:' ); ?><br /><input type="text" name="a_desc" value="" /></label> <a class="remImage" href="#"><?php _e( 'Remove' ); ?></a></p><p><label><?php _e( 'Image:' );?><br /><input type="file" name="a_image" /></label></p></div>')
+			jQuery('<div id="' + size + '" class="attchmt"><table class="attach-table" width="100%" cellpadding="3" cellspacing="2"><tr><td><span class="req">*</span><?php _e('Image:'); ?></td><td colspan="2"><input type="file" name="a_image" /></td></tr><tr><td><label><span class="req">*</span><?php _e('Title:'); ?> </label></td><td><input type="text" name="a_title[]" /></td><td rowspan="4" valign="top" align="center"><div class="prevImage"><div align="center"></div></div></td></tr><tr><td><label><?php _e('Alt Text:'); ?></label></td><td><input type="text" name="a_alt[]" /></td></tr><tr><td><label><?php _e('Content:'); ?></label></td><td><input type="text" name="a_content[]" /></td></tr><tr><td><label><?php _e('Caption:'); ?></label></td><td><input type="text" id="a_excerpt" name="a_excerpt[]" /></td></tr></table><a class="saveImage button" href="#"><?php _e('Save Image'); ?></a><a class="remImage button" href="#"><?php _e('Remove Image'); ?></a><a href="#" class="addImage button fr"><?php _e('Attach Another Image'); ?></a></div>')
 				.fadeIn('slow').prependTo(imgDiv);
 			size++;
 			return false;
@@ -131,11 +136,11 @@ function metabox_scripts() { ?>
 						post_type: 'attachment'
 					},
 					success: function( html ) {
-						alert( html );
+						jQuery('body').append( '<div>' + html + '</div>').fadeIn('slow').delay('200').fadeOut('slow').remove();
 					}
 				});
 				jQuery(this).parents('.attchmt').fadeOut('slow').detach();
-				jQuery(this).parents('.attchmt').prev('#addImage').detach();
+				jQuery(this).parents('.attchmt').siblings('#addImage').detach();
 				size--;
 			}
 			return false;
@@ -156,6 +161,7 @@ function metabox_styles() { ?>
 	.req { font-size:12px; color:#FF0000; font-weight:bold; }
 	.attchmt { border-bottom:21px solid #666; padding:10px 0; margin:10px 0; }
 	.prevImage { float:right; width:250px; text-align:center; }
+	.fr { float:right; }
 	</style>
 	<?php	
 }
@@ -182,7 +188,7 @@ function update_attachment() {
 	global $post;
 	wp_update_attachment_metadata( $post->ID, $_POST['a_image'] );
 
-	if( !empty( $_FILES['a_image']['name'] )) {
+	if( !empty( $_FILES['a_image']['name'] ) || !empty( $_POST['a_url'] )) {
 		require_once( ABSPATH . 'wp-admin/includes/file.php' );
 
 		$override['action'] = 'editpost';
@@ -200,20 +206,24 @@ function update_attachment() {
 		
 		if( $file_type['type'] ) {
 		
-			$name_parts = pathinfo( $file['file'] );
-			$name = $file['file'];
+			$url = $file['url'];
+			$name = $file['filename'];
 			$type = $file['type'];
 			$title = $_POST['a_title'] ? $_POST['a_title'] : $name;
-			$content = $_POST['a_desc'];
+			$alt = $_POST['a_alt'] ? $_POST['a_alt'] : $title;
+			$content = $_POST['a_content'];
+			$caption = $_POST['a_excerpt'];
 
 			$post_id = $post->ID;
 			$attachment = array(
 				'post_title' => $title,
+				'image_alt' => $alt,
 				'post_type' => 'attachment',
 				'post_content' => $content,
+				'post_excerpt' => $caption,
 				'post_parent' => $post_id,
 				'post_mime_type' => $type,
-				'guid' => $file['url'],
+				'guid' => $url,
 			);
 
 			foreach( get_intermediate_image_sizes() as $s ) {
