@@ -15,10 +15,9 @@
 	2. Fix the saving of the alt text field and captions
 	3. Fix the jQuery ADD markup so the added fields are matching what shows when saved
 	4. Make the returned ajax request display in a div not an alert box
-	5. When a file is removed, need to remove it's ADD button too
-	7. There is something I can't remember since writing #2 and it's bugging me now
-	8. Now I'm just writing things that aren't really TODO's 
-	9. lol like this
+	6. There is something I can't remember since writing #2 and it's bugging me now
+	7. Now I'm just writing things that aren't really TODO's 
+	8. lol this is another one that is not a TODO item
  */
 add_action( 'admin_init', 'add_attachment' );
 add_action( 'save_post', 'update_attachment' );
