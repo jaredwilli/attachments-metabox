@@ -136,7 +136,7 @@ function metabox_scripts() { ?>
 						post_type: 'attachment'
 					},
 					success: function( html ) {
-						jQuery('body').append( '<div>' + html + '</div>').fadeIn('slow').delay('200').fadeOut('slow').remove();
+						alert( html );
 					}
 				});
 				jQuery(this).parents('.attchmt').fadeOut('slow').detach();
