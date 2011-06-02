@@ -26,7 +26,7 @@ add_action( 'post_edit_form_tag', 'form_multipart_encoding' );
 add_action( 'wp_ajax_delete_attachment', 'delete_attachment' );
 //add_action( 'wp_ajax_delete_attachment', 'update_attachment' );
 
-add_filter( 'manage_posts_custom_column', 'product_custom_columns' );
+add_filter( 'manage_product_posts_custom_column', 'product_custom_columns' );
 add_filter( 'manage_edit-product_columns', 'product_edit_columns' );
 
 
@@ -251,9 +251,6 @@ function update_attachment() {
 	}
 }
 
-/**
- * This doesnt work but if it did it would add some custom columns
- */
 function product_edit_columns( $columns ) {
 	$columns = array(
 		'cb' => '<input type="checkbox" />',
